@@ -1,0 +1,41 @@
+---
+title: "Homework 11"
+author: "Stefan Konigorski"
+date: "January 27, 2022"
+output:
+  html_document: default
+---
+
+Download this R Markdown file, save it on your computer, and perform all the below tasks by inserting your answer in text or by inserting R chunks below. After you are done, upload this file with your solutions on Moodle.
+
+For all exercises, use the KiGGS dataset.
+
+## Exercise 1: Analysis of variance
+
+Choose serum glucose levels (GLUCX) as outcome variable of interest, the factors BMI group (bmiKH) and sex (sex), and physical wellbeing (kw100.e) as quantitative covariate (=metric variable), and compute 5 ANOVA models: (i-ii) one model with each factors separately, (iii) one model with both factors, (iv) one model with both factors and their interaction, (v) one model with both factors, their interaction, and the covariate.
+
+Choose at least one aspect that you observed in the results and write one sentence on the interpretation of this results. For example, you can write about: Write which factor is associated with the outcome? Is there a significant interaction effect? Does anything change after adjusting for the covariate?
+
+```{r}
+# Preparation
+dat_link <- url("https://www.dropbox.com/s/pd0z829pv2otzqt/KiGGS03_06.RData?dl=1")
+load(dat_link)
+dat <- KiGGS03_06
+dat$GLUCX <- as.numeric(as.character(dat$GLUCX))
+dat$kw100.e <- as.numeric(as.character(dat$kw100.e))
+dat$bmiKH <- factor(dat$bmiKH, labels = c("strong underweight", "underweight", "normal weight", "overweight", "obese"))
+dat$sex <- factor(dat$sex, labels = c("boys", "girls"))
+```
+
+## Exercise 2: Posthoc tests in analysis of variance (optional)
+
+Perform posthoc t-tests with and without a correction for multiple testing for the ANOVA in exercise 1, where we tested whether systolic blood pressure differed between age groups.
+
+```{r}
+# Preparation
+dat_link <- url("https://www.dropbox.com/s/pd0z829pv2otzqt/KiGGS03_06.RData?dl=1")
+load(dat_link)
+dat <- KiGGS03_06
+dat$age2 <- factor(dat$age2, labels = c("0-1y", "2-3y", "4-5y", "6-7y", "8-9y", "10-11y", "12-13y", "14-15y", "16-17y"))
+```
+

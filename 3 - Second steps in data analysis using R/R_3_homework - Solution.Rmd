@@ -1,0 +1,118 @@
+---
+title: "Homework 3"
+author: "Safial Islam Ayon"
+date: "November 13, 2021"
+output:
+  html_document: default
+---
+
+Download this R Markdown file, save it on your computer, and perform all the below tasks by inserting your answer in text or by inserting R chunks below. After you are done, upload this file with your solutions on Moodle.
+
+## Exercise 1: Compute frequencies in the Pima diabetes dataset
+
+Load the Pima diabetes dataset:
+
+```{r}
+load(file = url("https://www.dropbox.com/s/hxn1c7yw9r8aw8v/Pima_diabetes.RData?dl=1"))
+```
+
+Which variables are measured on a nominal level?
+
+#Solution
+
+```{r}
+head(Pima_diabetes)
+str(Pima_diabetes)
+```
+
+#After observing the output we can say that "Outcome" is nomial.
+
+Now compute frequency tables, barplots, and mosaic plots of all nominal variables in the dataset.
+
+#Solution:
+
+Pima_diabetes$Diabetes <- factor(Pima_diabetes$Outcome, labels = c("no", "yes"))
+
+table(Pima_diabetes$Outcome)
+table(Pima_diabetes$Diabetes)
+table_diabetes <- table(Pima_diabetes$Diabetes)
+
+table(Pima_diabetes$Diabetes) / nrow(Pima_diabetes)
+
+#Bar Plot
+barplot(table_diabetes, xlab = "Diabetes", ylab = "Absolute frequencies")
+
+#Mosaic Plot
+mosaicplot(table_diabetes, main = "Mosaic plot of Diabetes", color = TRUE)
+
+Next, create a variable which describes whether a woman had more or less than 4 pregnancies. Then, use this variable to create a 2x2 table with diabetes outcome. Do you see an indication of whether the number of pregnancies is associated with diabetes prevalence? Do you think your investigation is a good way to investigate this?
+
+#Solution:
+Pima_diabetes$pregnancy <- 0
+Pima_diabetes$pregnancy[Pima_diabetes$Pregnancies >= 4] <- 1
+Pima_diabetes$pregnancy <- factor(Pima_diabetes$pregnancy, labels = c("Less than 4", "More than 4"))
+table(Pima_diabetes$pregnancy, Pima_diabetes$Diabetes)
+
+#I think this investigation is a good way to investigate how many diabetes patients are pregnant.
+
+## Exercise 2: Generate a table with descriptive statistics (optional, but recommended)
+
+Use any dataset (a dataset that you have worked with in the past, or that you are currently working with, a dataset that is available on Blackboard, in R or that you have downloaded from the internet), and generate a table with descriptive statistics of the main variables of interest.
+
+#solution:
+
+summarytools::freq(Pima_diabetes$Diabetes)
+summarytools::freq(Pima_diabetes$Diabetes, style="rmarkdown")
+
+
+## Exercise 3: Plots using ggplot2
+
+Load the NoShow dataset:
+
+```{r}
+load(file = url("https://www.dropbox.com/s/4oqg79cn1qfnhsh/NoShowdata.RData?dl=1"))
+head(NoShowdata)
+```
+
+Use ggplot2 to generate the following plots:
+
+- Create a boxplots of Age (stratified) by neighborhood.
+- Create a histogram of Age.
+- Create a histogram of Age, stratified by whether the person showed up - in one panel using the or in multiple panels.
+- Stratify this plot further by gender.
+
+What insights can you get from these plots? For which goal would you create these plots?
+
+#Solution:
+library(ggplot2)
+
+NoShowdata$Age[NoShowdata$Age < 0] <- NA
+NoShowdata$Gender <- factor(NoShowdata$Gender, labels = c("F", "M"))
+NoShowdata$Diabetes <- factor(NoShowdata$Diabetes, labels = c("FALSE", "TRUE"))
+NoShowdata$Noshow <- factor(NoShowdata$"No-show", labels = c("Show Up", "Not Show Up"))
+NoShowdata$Neighbourhood <- factor(NoShowdata$Neighbourhood)
+
+#BoxPlot
+ggplot(data = NoShowdata, aes(y = Age)) + geom_boxplot()
+ggplot(data = NoShowdata, aes(y = Age, x = Neighbourhood)) + geom_boxplot()
+
+#Boxplot is particularly useful for comparing distributions across groups. like here we group neighbourhood and age. 
+
+#Histogram
+ggplot(data = NoShowdata, mapping = aes(x = Age)) + geom_histogram()
+
+#Count the different Age
+
+#Histogram
+ggplot(data = NoShowdata, mapping = aes(x = Age, col = Noshow)) + geom_histogram()
+ggplot(data = NoShowdata, mapping = aes(x = Age, fill = Noshow)) + geom_histogram()
+ggplot(data = NoShowdata, mapping = aes(x = Age)) + geom_histogram() + facet_grid(~ Noshow)
+
+#Count different age into two different category "Show Up" and "Not Show Up".
+
+#Histogram
+ggplot(data = NoShowdata, mapping = aes(x = Age, fill = Noshow)) + geom_histogram() + facet_grid(~ Gender)
+
+#Count different age based on two different parameters "Noshow" and "Gender". The "Noshow" divided into two categories "Show Up" and "Not Show Up". The "Gender" divided into two categories "Male" and "Female".
+
+

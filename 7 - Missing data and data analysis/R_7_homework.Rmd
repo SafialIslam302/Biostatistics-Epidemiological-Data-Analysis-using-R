@@ -1,0 +1,26 @@
+---
+title: "Homework 7"
+author: "Stefan Konigorski"
+date: "December 9, 2021"
+output:
+  html_document: default
+---
+
+Download this R Markdown file, save it on your computer, and perform all the below tasks by inserting your answer in text or by inserting R chunks below. After you are done, upload this file with your solutions on Moodle.
+
+## Preparations
+
+Load KiGGS data:
+
+```{r}
+dat_link <- url("https://www.dropbox.com/s/pd0z829pv2otzqt/KiGGS03_06.RData?dl=1")
+load(dat_link)
+kiggs <- KiGGS03_06
+```
+
+## Exercise 1: Multiple imputation
+
+a) In the KiGGS dataset, choose 2 metric variables of your choice.
+b) Compute the correlation between these two variables
+c) Perform a multiple imputation using the mice function with the 'pmm' method and otherwise default settings.
+d) Compute the correlation again on the multiple imputed datasets.

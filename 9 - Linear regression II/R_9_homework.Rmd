@@ -1,0 +1,36 @@
+---
+title: "Homework 9"
+author: "Stefan Konigorski"
+date: "January 13, 2022"
+output:
+  html_document: default
+---
+
+Download this R Markdown file, save it on your computer, and perform all the below tasks by inserting your answer in text or by inserting R chunks below. After you are done, upload this file with your solutions on Moodle.
+
+## Exercise 1: Assumptions of linear regression
+
+Load the KiGGS dataset and compute a regression predicting BMI by sex and age groups (age2):
+
+```{r}
+# load data
+dat_link <- url("https://www.dropbox.com/s/pd0z829pv2otzqt/KiGGS03_06.RData?dl=1")
+load(dat_link)
+dat <- KiGGS03_06
+
+# Regression:
+fit1 <- lm(dat$bmiB ~ dat$sex + as.numeric(dat$age2))
+
+# results:
+summary(fit1)
+```
+
+In this model, investigate and judge whether the assumptions listed on slide 13 in lecture 9 are satisfied.
+
+## Exercise 2: Model selection in linear regression (optional)
+
+In the KiGGS dataset, aim to select relevant predictors for sys12 (systolic blood pressure). Use 2 of the model selection approaches described on slide 26, apply them to the KiGGS dataset and compare the results.
+
+## Exercise 3: Linear regression with multiple imputation (optional)
+
+Run the code in the Rmd file R_9b_linear_regression_MI.Rmd, inspect the R code what it is doing, and look at the results. Apply the same to the linear regression model of another variable of your choice.

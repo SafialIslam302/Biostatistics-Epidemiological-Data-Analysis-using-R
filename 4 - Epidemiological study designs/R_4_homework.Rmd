@@ -1,0 +1,48 @@
+---
+title: "Homework 4"
+author: "Stefan Konigorski"
+date: "November 18, 2021"
+output:
+  html_document: default
+---
+
+Download this R Markdown file, save it on your computer, and perform all the below tasks by inserting your answer in text or by inserting R chunks below. After you are done, upload this file with your solutions on Moodle.
+
+## Exercise 1: Descriptive statistics - example 1
+
+Create a summary table with descriptive statistics of the esoph dataframe in the datasets package. For example by using the summary_table function in the qwraps2 package.
+
+Alternatively, only compute the descriptive statistics of interest, and put them into a table in Word (or Excel, or another program).
+
+```{r}
+# Load the data
+library(datasets)
+?esoph
+dat1 <- esoph
+```
+
+## Exercise 2: Descriptive statistics - example 2 (optional, more advanced)
+
+Create a summary table with descriptive statistics of the UKLungDeaths data in the datasets package. For example by using the summary_table function in the qwraps2 package. 
+
+Alternatively, only compute the descriptive statistics of interest, and put them into a table in Word (or Excel, or another program).
+
+```{r}
+# Load the data
+library(datasets)
+?UKLungDeaths 
+```
+
+Hint: the data consists of three datasets.
+
+## Exercise 3: Sample size calculation (optional - only solvable if you have taken some statistics course in the past)
+
+Aim: Compute the sample size using R or G*Power.
+
+Study question: Investigate if biking to the HPI helps you to better concentrate in class or not. 
+
+Think about which study design you could use for this study, and describe it.
+
+Think about which statistical test you could use for investigating this research question, and describe it.
+
+Do a sample size calculation and answer the question: which sample size is necessary, to find a true effect with 80\% power at $\alpha=0.05$?

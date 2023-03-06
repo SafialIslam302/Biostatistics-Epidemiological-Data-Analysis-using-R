@@ -1,0 +1,24 @@
+---
+title: "Further exercises"
+author: "Stefan Konigorski"
+date: "December 16, 2021"
+output:
+  html_document: default
+---
+
+These exercises will be discussed in the tutorial.
+
+## Exercise 1: Correlation
+
+a) In the KiGGS dataset, compute the Pearson and Spearman correlation coefficient for the two variables 'sys1' and 'sys2' and hypothesis tests whether the two variables are associated or not. Interpret the results, and decide which of the two coefficients you would report in your analysis and why.
+
+b) Compute confidence intervals of the correlation coefficient estimates from part a). Note: for confidence intervals of the Spearman coefficient, you need another function.
+
+## Exercise 2: Linear regression
+
+a) Predict sys2 by sys1 using a simple linear regression, and interpret the results.
+b) Add age2 and sex as predictors to the linear regression model above, and interpret the results. 
+
+## Exercise 3: Visualization of regression
+
+Use the functions in ggplot2 to compute a scatter plot and insert the regression line of the analysis in exercise 2a.

@@ -1,0 +1,50 @@
+```{r}
+load("KiGGS03_06.RData")
+
+Kiggs <- KiGGS03_06
+
+table(Kiggs$e0155)
+
+#Proportion of mothers that had hypertension during pregnancy = (202)/(202+2305+37) = 0.0794 or 7.9% 
+
+```
+
+```{r}
+str(Kiggs$groeB)
+typeof(Kiggs$groeB)
+Kiggs$groeB <- as.numeric(as.character(Kiggs$groeB))
+
+tapply(Kiggs$groeB, Kiggs$age2, mean, na.rm = TRUE)
+
+Kiggs$tall <- NULL
+
+for(i in 1:length(levels(Kiggs$age2)))
+{
+  n <- (Kiggs$age2 == levels(Kiggs$age2)[i])
+  Kiggs$tall[n] <- ifelse(Kiggs$groeB[n] > mean(Kiggs$groeB[n], na.rm = TRUE), 1, 0)
+}
+
+Kiggs$tall <- factor(Kiggs$tall, labels = c("short", "tall"))
+table(Kiggs$tall)
+                        
+```
+
+
+```{r}
+table(Kiggs$e0155)
+Kiggs$e0155[Kiggs$e0155 == "Weiß nicht"] <- NA
+Kiggs$e0155 <- droplevels(Kiggs$e0155)
+
+table(Kiggs$e0155, Kiggs$tall)
+
+tall_prob <- 83/(83+857)
+short_prob <- 118/(118+1404)
+
+tall_odds <- tall_prob/(1-tall_prob)
+tall_odds
+short_odds <- short_prob/(1-short_prob)
+short_odds
+
+tall_odds/short_odds
+
+```

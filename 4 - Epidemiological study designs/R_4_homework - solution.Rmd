@@ -1,0 +1,85 @@
+---
+title: "Homework 4"
+author: "Safial Islam Ayon"
+date: "November 21, 2021"
+output:
+  html_document: default
+---
+
+Download this R Markdown file, save it on your computer, and perform all the below tasks by inserting your answer in text or by inserting R chunks below. After you are done, upload this file with your solutions on Moodle.
+
+## Exercise 1: Descriptive statistics - example 1
+
+Create a summary table with descriptive statistics of the esoph dataframe in the datasets package. For example by using the summary_table function in the qwraps2 package.
+
+Alternatively, only compute the descriptive statistics of interest, and put them into a table in Word (or Excel, or another program).
+
+```{r}
+# Load the data
+library(datasets)
+?esoph
+dat1 <- esoph
+#dat1
+
+#Solution
+library(qwraps2)
+options(qwraps2_markup = "markdown")
+
+library(dplyr)
+
+dat1 %>%
+  dplyr::select(.data$tobgp, .data$agegp, .data$alcgp, .data$ncases, .data$ncontrols) %>%
+  dplyr::group_by(agegp) %>%
+  summary_table(.) %>%
+  print(rtitle = "Summary Descriptive Statistics Table", cnames = c("Age: 25-34    ", "Age: 35-44    ", "Age: 45-54    ", "Age: 55-64    ", "Age: 65-74    ", "Age: 75+    "))
+
+```
+
+
+## Exercise 2: Descriptive statistics - example 2 (optional, more advanced)
+
+Create a summary table with descriptive statistics of the UKLungDeaths data in the datasets package. For example by using the summary_table function in the qwraps2 package. 
+
+Alternatively, only compute the descriptive statistics of interest, and put them into a table in Word (or Excel, or another program).
+
+```{r}
+# Load the data
+library(datasets)
+?UKLungDeaths 
+
+#Solution
+library(qwraps2)
+
+ldeaths
+fdeaths
+mdeaths
+
+```
+
+Hint: the data consists of three datasets.
+
+## Exercise 3: Sample size calculation (optional - only solvable if you have taken some statistics course in the past)
+
+Aim: Compute the sample size using R or G*Power.
+
+Study question: Investigate if biking to the HPI helps you to better concentrate in class or not. 
+
+Think about which study design you could use for this study, and describe it.
+
+Think about which statistical test you could use for investigating this research question, and describe it.
+
+Do a sample size calculation and answer the question: which sample size is necessary, to find a true effect with 80\% power at $\alpha=0.05$?
+
+solution:
+I will use "Analytic studies - N-of-1 trial" study design, because, the goal of an n-of-1 trial is to determine the optimal or best intervention for an individual person using objective data-driven criteria [1].This type of study has enabled practitioners to achieve experimental progress without the overwhelming work of designing a group comparison study. It can be very effective in confirming causality [2].
+
+[1] https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3118090/
+[2] https://en.wikipedia.org/wiki/N_of_1_trial
+
+
+Absolute frequency could use for investigating the research question, because Absolute frequency is a statistical term describing the number of times a particular piece of data or a particular value appears during a trial or set of trials. Essentially, absolute frequency is a simple count of the number of times a value is observed. Absolute frequency is usually expressed as a whole number and is considered a very basic level of statistical analysis [3].
+
+[3] https://www.investopedia.com/terms/a/absolute_frequency.asp
+
+
+In G*power, first select statistical test = Linear multiple regression: Fixed model, single regression coefficient, Tail(s) = One, Effect size f^2 = 0.15, alpha = 0.05, Power = 0.8, and number of predictors = 2, then click calculate. Then found that total sample size = 43.   

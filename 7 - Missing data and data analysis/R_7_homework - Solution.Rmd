@@ -1,0 +1,90 @@
+---
+title: "Homework 7"
+author: "Stefan Konigorski"
+date: "December 9, 2021"
+output:
+  html_document: default
+---
+
+Download this R Markdown file, save it on your computer, and perform all the below tasks by inserting your answer in text or by inserting R chunks below. After you are done, upload this file with your solutions on Moodle.
+
+## Preparations
+
+Load KiGGS data:
+
+```{r}
+dat_link <- url("https://www.dropbox.com/s/pd0z829pv2otzqt/KiGGS03_06.RData?dl=1")
+load(dat_link)
+kiggs <- KiGGS03_06
+```
+
+## Exercise 1: Multiple imputation
+
+a) In the KiGGS dataset, choose 2 metric variables of your choice.
+b) Compute the correlation between these two variables
+c) Perform a multiple imputation using the mice function with the 'pmm' method and otherwise default settings.
+d) Compute the correlation again on the multiple imputed datasets.
+
+
+```{r}
+
+var1 = kiggs$wKGSLab
+var2 = kiggs$wKGSVitD
+
+```
+
+```{r}
+
+#Pearson correlation test
+pc <- cor.test(var1, var2, method = "pearson")
+pc
+
+#In the result
+#t is the t-test statistic value;
+#df is the degrees of freedom;
+#p-value is the significance level of the t-test;
+#conf.int is the confidence interval of the correlation coefficient at 95%;
+#sample estimates is the correlation coefficient.
+
+
+#Kendall rank correlation test
+krc <- cor.test(var1, var2, method="kendall")
+krc
+
+#In the result, tau is the Kendall correlation coefficient.
+
+#Spearman rank correlation coefficient
+src <- cor.test(var1, var2, method = "spearman")
+src
+
+#In the result, rho is the Spearman’s correlation coefficient.
+
+```
+
+
+```{r}
+
+library(mice)
+
+#First I try the mice function of the whole kiggs dataset. But it doesnot work. It shows the following errors: "Error: cannot allocate vector of size 4.5 Gb" 
+#Then I create a new dataframe using the variable I take at first. 
+
+var = data.frame(var1, var2)
+
+imp1 <- mice(var, m = 5) #The default method of imputation in the MICE package is PMM and the default number of imputations is 5
+imp1
+
+```
+
+
+```{r}
+
+temp1 = imp1$imp$var1
+temp2 = imp1$imp$var2
+
+temp3 <- temp2[-c(3255:7625), ] #Reshape the temp2 dataframe because temp1 and temp2 dataframes dimensions are not same. 
+
+correlation <- cor(temp1,temp3) #Correlation between two variables
+correlation
+
+```

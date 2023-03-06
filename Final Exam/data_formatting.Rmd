@@ -1,0 +1,12 @@
+---
+title: "Final exam - data formatting for question 2"
+author: "Stefan Konigorski"
+date: "February 16, 2022"
+output:
+  html_document: default
+---
+
+```{r}
+kiggs$sex  <- factor(kiggs$sex, labels = c("boys", "girls"))
+kiggs$age2 <- factor(kiggs$age2, labels = c("0-1y", "2-3y", "4-5y", "6-7y", "8-9y", "10-11y", "12-13y", "14-15y", "16-17y"))
+```

@@ -1,0 +1,45 @@
+---
+title: "Homework 13"
+author: "Safial Islam Ayon"
+date: "February 10, 2022"
+output:
+  html_document: default
+---
+
+Download this R Markdown file, save it on your computer, and perform all the below tasks by inserting your answer in text or by inserting R chunks below. After you are done, upload this file with your solutions on Moodle.
+
+## Exercise 1: Survival analysis
+
+Choose one other provided dataset in the survival package (or any other suitable dataset) which contains time-to-event data. Use the survfit function to compute the Kaplan-Meier estimate of the survival function and plot it. Then choose a variable with 2 or more categories in the dataset and perform a log-rank test. Interpret the results: is there are difference in survival between the groups?
+
+```{r}
+library(survival)
+
+s <- Surv(lung$time, lung$status)
+survfit(s~1)
+survfit(Surv(time, status)~1, data=data_new)
+sfit <- survfit(Surv(time, status)~1, data=data_new)
+sfit
+```
+
+```{r}
+#Fit a survival curve to the data it’s pretty easy to visualize it with a Kaplan-Meier plot
+sfit <- survfit(Surv(time, status)~sex, data=data_new)
+plot(sfit)
+```
+
+```{r}
+#Add confidence intervals, show the p-value for the log-rank test, show a risk table below the plot, and change the colors and the group labels.
+library(survminer)
+ggsurvplot(sfit, conf.int=TRUE, pval=TRUE, risk.table=TRUE,legend.labs=c("Male", "Female"), legend.title="Sex", palette=c("dodgerblue2", "orchid2"), title="Kaplan-Meier Curve for Lung Cancer Survival", risk.table.height=.15)
+
+```
+
+```{r}
+surv_diff <- survdiff(Surv(time, status) ~ sex, data = data_new)
+surv_diff
+
+#With one degree of freedom, the Chi-Squared test statistic is 10.3 and the associated p-value is 0.001. We reject the null hypothesis since the p-value is less than 0.05.
+
+#In other words, we have enough data to conclude that the two groups have statistically significant differences in survival.
+```

@@ -1,0 +1,81 @@
+---
+title: "Homework 6"
+author: "Safial Islam Ayon"
+date: "December 05, 2021"
+output:
+  html_document: default
+---
+
+Download this R Markdown file, save it on your computer, and perform all the below tasks by inserting your answer in text or by inserting R chunks below. After you are done, upload this file with your solutions on Moodle.
+
+## Exercise 1: Statistical tests
+
+a) In the KiGGS dataset, perform a 2-sample t-test for paired samples (i.e. dependent samples) for the two variables 'sys1' and 'sys2'. Interpret the results.
+b) In the KiGGS dataset, select one metric and one binary variable (or create one) and perform a 2-sample t-test. Then do a Mann-Whitney U-test with the same variables, explore the function to do this, and compare the results to the t-test.
+
+```{r}
+#Load the KiGGS03 dataset
+
+load("KiGGS03_06.RData")
+Kiggs <- KiGGS03_06
+
+#convert the data into numeric
+x = as.numeric(Kiggs$sys1) 
+y = as.numeric(Kiggs$sys2)
+
+t_p <- t.test(x, y, mu = 0, paired = TRUE, conf.level = 0.99)
+
+t_p
+t_p$p.value
+
+#The t test statistic is represented by t. Here it's -19.915.
+
+#The degrees of freedom associated with the t test statistic are denoted by df. It's 14564 in this example.
+
+#p-value: This is the p-value for a t test statistic of -19.915 and a df of 14564. It turns out that the p-value is 2.2e-16.
+
+#alternative hypothesis: This indicates which alternative hypothesis was utilized in this t-test. The alternative hypothesis in this scenario is that the real difference in means between the two groups is not zero.
+
+#99 percent confidence interval: This shows a 99% confidence interval for the true difference between the means between the two groups. It turns out to be [-1.2385337, -0.9548065].
+
+#sample estimates: This shows us the sample mean difference between two groups of samples. In this case, the sample average was -1.09667
+
+#Since the p-value (2.2e-16) of the test is less than alpha = 0.05, we reject the null hypothesis of the test. This means that there is sufficient evidence to say that the two variables (sys1 and sys2) are different.
+
+```
+
+
+```{r}
+
+c = as.numeric(Kiggs$ffq) #ffq hold ja/nein
+wilcox_p  <- wilcox.test((x + y), c, mu = 0, paired = TRUE, conf.level = 0.99) #metric (x+y), and c is the binary variable
+
+wilcox_p
+wilcox_p$p.value
+#Here the value of P is small so, we can reject the null hypothesis.
+
+#The difference between t-test and wilcoxon test result is the value of P. In t-test P value is 4.341201e-87 and in wilcox test the P value is 0. 
+```
+
+## Exercise 2: Study planning (optional)
+
+Compute the sample size using R or G*Power, for a study that investigates the question if biking to the HPI is associated with concentration in class or not.
+
+Think about how you can formulate this study question in terms of variables, and which statistical test (that we have covered in class 6) would be appropriate for this.
+
+a) Which test could you use?
+
+b) Which sample size is necessary, to find a true effect with 80\% power at $\alpha=0.05$ using this statistical test?
+
+
+##a) I will use "two-sample t-test". In this test we need two variables and data are independent (here the biking and cncentration of class are two independent variables) and randomly sampled from two normal populations. This method used to test whether the unknown population means of two groups are equal or not. 
+
+
+##b) I use G*Power to calculate the sample size. 
+##Step 1: select test family: t tests
+##Step 2: select statistical test: Means: Deiiference between two independent means (two groups)
+##Step 3: select Type of Power analysis: A priori: Compute reguired sample size - given alpha,, power, and effect size
+##Step 4: select tails(s): one; effect size d: 0.5; alpha err prob: 0.05 (given); power: 0.80 (given); allocation ration: 1
+##Step 5: Click "Calculate" button. 
+
+##We found that the total population size is: 102

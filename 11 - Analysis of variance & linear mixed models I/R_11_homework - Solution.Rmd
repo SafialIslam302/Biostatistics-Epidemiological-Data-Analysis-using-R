@@ -1,0 +1,102 @@
+---
+title: "Homework 11"
+author: "Safial Islam Ayon"
+date: "January 27, 2022"
+output:
+  html_document: default
+---
+
+Download this R Markdown file, save it on your computer, and perform all the below tasks by inserting your answer in text or by inserting R chunks below. After you are done, upload this file with your solutions on Moodle.
+
+For all exercises, use the KiGGS dataset.
+
+## Exercise 1: Analysis of variance
+
+Choose serum glucose levels (GLUCX) as outcome variable of interest, the factors BMI group (bmiKH) and sex (sex), and physical wellbeing (kw100.e) as quantitative covariate (=metric variable), and compute 5 ANOVA models: (i-ii) one model with each factors separately, (iii) one model with both factors, (iv) one model with both factors and their interaction, (v) one model with both factors, their interaction, and the covariate.
+
+Choose at least one aspect that you observed in the results and write one sentence on the interpretation of this results. For example, you can write about: Write which factor is associated with the outcome? Is there a significant interaction effect? Does anything change after adjusting for the covariate?
+
+```{r}
+# Preparation
+dat_link <- url("https://www.dropbox.com/s/pd0z829pv2otzqt/KiGGS03_06.RData?dl=1")
+load(dat_link)
+dat <- KiGGS03_06
+dat$GLUCX <- as.numeric(as.character(dat$GLUCX))
+dat$kw100.e <- as.numeric(as.character(dat$kw100.e))
+dat$bmiKH <- factor(dat$bmiKH, labels = c("strong underweight", "underweight", "normal weight", "overweight", "obese"))
+dat$sex <- factor(dat$sex, labels = c("boys", "girls"))
+
+fit_1 <- aov(dat$GLUCX ~ dat$bmiKH, data = dat)
+summary(fit_1)
+
+## The p-value of the F-statistic is found in the Pr(>F) column. This indicates how likely the F-value computed from the test would have occurred if the null hypothesis of no difference between group means had been true.
+
+## Here the p_value is very low 2.12e-05, so it appears that the BMI group has a real impact on the final serum glucose levels (GLUCX).
+
+fit_2 <- aov(dat$GLUCX ~ dat$sex, data = dat)
+summary(fit_2)
+
+## Here the p_value is very low <2e-16, so it appears that the sex has also a real impact on the final serum glucose levels (GLUCX).
+
+fit_3 <- aov(dat$GLUCX ~ dat$bmiKH + dat$sex, data = dat)
+summary(fit_3)
+
+## When both factors (SEX and BMI group) are used then also both variables are statistically significant (p-values < 0.001).
+
+fit_4 <- aov(dat$GLUCX ~ dat$bmiKH + dat$sex + dat$bmiKH:dat$sex, data = dat)
+summary(fit_4)
+
+## In the output table, the ‘dat$bmiKH:dat$sex’ variable has a high sum-of-squares value and a high p-value (0.424), which means there is not much variation that can be explained by the interaction between BMI group and sex. 
+
+fit_5 <- aov(dat$GLUCX ~ dat$kw100.e + (dat$bmiKH + dat$sex + dat$bmiKH:dat$sex), data = dat)
+summary(fit_5)
+
+## It also shows same tendency as before. 
+
+```
+
+## Exercise 2: Posthoc tests in analysis of variance (optional)
+
+Perform posthoc t-tests with and without a correction for multiple testing for the ANOVA in exercise 1, where we tested whether systolic blood pressure differed between age groups.
+
+```{r}
+# Preparation
+dat_link <- url("https://www.dropbox.com/s/pd0z829pv2otzqt/KiGGS03_06.RData?dl=1")
+load(dat_link)
+dat <- KiGGS03_06
+dat$age2 <- factor(dat$age2, labels = c("0-1y", "2-3y", "4-5y", "6-7y", "8-9y", "10-11y", "12-13y", "14-15y", "16-17y"))
+
+# systolic blood pressure
+dat$sys12 <- as.numeric(as.character(dat$sys12))
+#dat$sys12
+
+fit_6 <- aov(dat$sys12 ~ dat$age2, data = dat)
+summary(fit_6)
+
+## Here the p_value is very low <2e-16, so it appears that the AGE has a real impact on the final systolic blood pressure.
+
+#Create new dataset using dat$sys12 and dat$age2 column.
+sys = dat$sys12
+age = dat$age2
+new_data <- data.frame(sys, age)
+
+#Remove Rows with contains some missing NA values
+new_data <- new_data[complete.cases(new_data), ]
+
+#no adjustment of p-values:
+pairwise.t.test(new_data$sys, new_data$age, p.adj = "none")
+
+## "2-3y and 4-5y" & "2-3y and 6-7y" have different P value 0.35 and 3e-16 respectively. All the others group have same P value.
+
+#Bonferroni and Holm adjustments
+pairwise.t.test(new_data$sys, new_data$age, p.adj = "bonf")
+pairwise.t.test(new_data$sys, new_data$age, p.adj = "holm")
+
+## Both the cases "2-3y and 4-5y" & "2-3y and 6-7y" have different P value. All the others group have same P value (2e-16).
+
+#TukeyHSD (Tukey Honest Significant Differences)
+TukeyHSD(fit_6)
+
+## Here only the "2-3y and 4-5y" group has different "p adj" value (0.9827291).
+```
+

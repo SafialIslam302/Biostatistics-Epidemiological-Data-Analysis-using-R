@@ -1,0 +1,168 @@
+---
+title: "Homework 9"
+author: "Safial Islam Ayon"
+date: "January 17, 2022"
+output:
+  html_document: default
+---
+
+Download this R Markdown file, save it on your computer, and perform all the below tasks by inserting your answer in text or by inserting R chunks below. After you are done, upload this file with your solutions on Moodle.
+
+## Exercise 1: Assumptions of linear regression
+
+Load the KiGGS dataset and compute a regression predicting BMI by sex and age groups (age2):
+
+```{r}
+# load data
+dat_link <- url("https://www.dropbox.com/s/pd0z829pv2otzqt/KiGGS03_06.RData?dl=1")
+load(dat_link)
+dat <- KiGGS03_06
+
+# Regression:
+fit1 <- lm(dat$bmiB ~ dat$sex + as.numeric(dat$age2))
+
+# results:
+summary(fit1)
+```
+
+In this model, investigate and judge whether the assumptions listed on slide 13 in lecture 9 are satisfied.
+
+## Assumption: Y is continuous
+## Answer: Yes
+
+## Assumption: The relationships between Y and all Xj are linear
+## Answer:
+
+```{r}
+library(ggplot2)
+
+x <- ggplot(dat, aes(PPoint, bmiB))
+
+x + geom_jitter()
+
+x + geom_jitter(aes(color = sex)) + theme_minimal() + labs(x = "E088m07", y = "bmiB" + stat_smooth(method = lm, formula = y ~ x) )
+
+## From the plot we can say that their are no linear replationship between two variables. So we should add quadratic/polynomial terms or splines
+
+## Build the model
+model <- lm(bmiB ~ PPoint + I(PPoint^2), data = dat)
+```
+
+## Assumption: All relevant variables (covariates, confounders) are in the model
+## Answer:
+
+```{r}
+adj.model <- lm(dat$PPoint ~ dat$bmiB)
+summary(adj.model)
+coef(adj.model)
+confint(adj.model)
+
+## bmiB is Unbiased coefficients. So it is covariates.
+
+```
+
+## Assumption: All observations are independent
+## Answer: Two observations are independent if the occurrence of one observation provides no information about the occurrence of the other observation.
+
+```{r}
+library("irr")
+
+icc(
+  dat$bmiB, model = "twoway", 
+  type = "agreement", unit = "single"
+  )
+
+## As the result shows NA. So bmiB is independent.
+```
+
+## Assumption: There is no multicollinearity (≈ not a ”super strong” correlation between the Xj )
+## Answer:
+
+```{r}
+
+mymodel <- lm(dat$bmiB ~ dat$PPoint + dat$wKGSLab + dat$e007ma, dat)
+summary(mymodel)
+
+library(car)
+vif(mymodel)
+
+## As a rule of thumb, a vif score over 5 is a problem. A score over 10 should be remedied and you should consider dropping the problematic variable from the regression model or creating an index of all the closely related variables.
+
+## As all value are less than 5 when we can say that there are no multicollinearity.
+```
+
+## Assumption: Homoscedasticity (equal variance) of the residuals
+## Answer:
+
+```{r}
+plot(mymodel, 3)
+
+## This plot shows if residuals are spread equally along the ranges of predictors. It’s good if you see a horizontal line with equally spread points. here, this is not the case.
+
+## A possible solution to reduce the heteroscedasticity problem is to use a log or square root transformation of the outcome variable (y).
+mymodel2 <- lm(log(dat$bmiB) ~ dat$PPoint + dat$wKGSLab + dat$e007ma, dat)
+plot(mymodel2, 3)
+```
+
+## Assumption: Normal distribution of the residuals
+## Answer:
+```{r}
+
+install.packages("olsrr")
+library(olsrr)
+
+hist(residuals(mymodel))
+
+## Residual QQ Plot
+ols_plot_resid_qq(mymodel)
+
+## Correlation between observed residuals and expected residuals under normality
+ols_test_correlation(model)
+
+## plot shows that it is not normally distributed
+
+```
+
+
+## Exercise 2: Model selection in linear regression (optional)
+
+In the KiGGS dataset, aim to select relevant predictors for sys12 (systolic blood pressure). Use 2 of the model selection approaches described on slide 26, apply them to the KiGGS dataset and compare the results.
+
+
+```{r}
+temp_frame <- data.frame(sys = as.numeric(dat$sys12), age = as.numeric(dat$age2), bmi = as.numeric(dat$bmiB), sex = as.numeric(dat$sex), cho = as.numeric(dat$CHOLX), glu = as.numeric(dat$GLUCX))
+
+## Return a logical vector indicating which cases are complete, 
+## i.e., have no missing values.
+newdata <- temp_frame[complete.cases(temp_frame), ]
+
+## Lasso
+
+library(glmnet)
+
+x_t <- newdata[, 2:6]
+x_t <- as.matrix(x_t)
+
+y = newdata$sex
+
+cvo_lasso = cv.glmnet(x_t, y, alpha = 1)
+coef(cvo_lasso, s = "lambda.min")
+
+## Step wise selection with AIC criterion
+
+library(MASS)
+
+Model_LM <- lm(sys ~ ., data = newdata)
+
+fit_back <- stepAIC(Model_LM, direction = 'both')
+fit_back
+summary(fit_back)
+
+
+## Difference: In Lasso only the "sex" is selected, because we fixed the y value. 
+## But in Step wise selection "age", "bmi", "sex", and "glu" are selected.
+```
+
+## Exercise 3: Linear regression with multiple imputation (optional)
+
+Run the code in the Rmd file R_9b_linear_regression_MI.Rmd, inspect the R code what it is doing, and look at the results. Apply the same to the linear regression model of another variable of your choice.

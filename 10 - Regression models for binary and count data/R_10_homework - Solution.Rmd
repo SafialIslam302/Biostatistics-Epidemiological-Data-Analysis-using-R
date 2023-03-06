@@ -1,0 +1,101 @@
+---
+title: "Homework 10"
+author: "Safial Islam Ayon"
+date: "January 23, 2022"
+output:
+  html_document: default
+---
+
+Download this R Markdown file, save it on your computer, and perform all the below tasks by inserting your answer in text or by inserting R chunks below. After you are done, upload this file with your solutions on Moodle.
+
+For all exercises, use the KiGGS dataset.
+
+## Exercise 1: Logistic regression
+
+Choose 1 suitable outcome variable of interest and 3 predictors, and compute a logistic regression model. Interpret the results: which predictor is associated with the outcome and what is the strength of association (odds ratio)? Also, is the model a good fit i.e. can the outcome be predicted well (look at the misclassification table for this)?
+
+```{r}
+
+# load data
+dat_link <- url("https://www.dropbox.com/s/pd0z829pv2otzqt/KiGGS03_06.RData?dl=1")
+load(dat_link)
+dat <- KiGGS03_06
+
+dat$Type.new <- ifelse(test = dat$Maanzahl==0, yes = 0, no = 1)
+
+#table(dat$Type.new)
+#table(dat$sexa)
+#table(dat$agegrp)
+#table(dat$AUSL)
+
+dat$sexa <- factor(dat$sexa, labels = c("Jungen", "Mädchen"))
+dat$agegrp <- factor(dat$agegrp, labels = c("0 - 2 Jahre", "3 - 6 Jahre", "7 - 10 Jahre", "11 - 13 Jahre", "14 - 17 Jahre"))
+dat$AUSL <- factor(dat$AUSL, labels = c("Kein Ausländer", "Ausländer"))
+
+# Logistic regression: Model fit
+# The response variable is the binary variable Type.new and the predictor variable is sexa, agegrp, and AUSL
+log.model <- glm(Type.new ~ sexa + agegrp + AUSL, data = dat, family = 'binomial')
+
+# Use the extractor function summary() to review the model properties.
+summary(log.model)
+
+# take a closer look on the coefficients:
+summary(log.model$coefficients)
+
+library(ROCR)
+
+fitted.results <- predict(log.model, type='response')
+summary(fitted.results)
+
+#Odds Ratio
+exp(log.model$coefficients[-1])
+```
+
+## Exercise 2: Poisson regression
+
+Predict the amount of measles vaccinations (Maanzahl) by the number of siblings (e006B1), the sex and age of the children (sex, age2), place of residence (STALA, OW) and the monthly household income (e093), using a Poisson regression model. Interpret the results. Which variables are associated with the outcome? Is the model a good fit to the data?
+
+```{r}
+
+dat$Type.new <- ifelse(test = dat$Maanzahl==0, yes = 0, no = 1)
+
+#table(dat$Type.new)
+#table(dat$e006B1)
+#table(dat$sex)
+#table(dat$age2)
+#table(dat$OW)
+#table(dat$STALA)
+#table(dat$e093)
+
+dat$e006B1 <- factor(dat$e006B1, labels = c("Kein Geschwisterkind", "Ein Geschwisterkind", "Zwei und mehr Geschwister"))
+dat$sex <- factor(dat$sex, labels = c("Männlich", "Weiblich"))
+dat$age2 <- factor(dat$age2, labels = c("0 - 1 J.", "2 - 3 J.", "4 - 5 J.", "6 - 7 J.", "8 - 9 J.", "10 - 11 J.", "12 - 13 J.", "14 - 15 J.", "16 - 17 J."))
+dat$OW <- factor(dat$OW, labels = c("Ost", "West"))
+dat$STALA <- factor(dat$STALA, labels = c("Ländlich", "Kleinstädtisch", "Mittelstädtisch", "Großstädtisch"))
+dat$e093 <- factor(dat$e093, labels = c("< 500 €", "500 - < 750 €", "750 - < 1.000 €", "1.000 - < 1.250 €", "1.250 - < 1.500 €", "1.500 - < 1.750 €", "1.750 - < 2.000 €", "2.000 - < 2.250 €", "2.250 - < 2.500 €", "2.500 - < 3.000 €", "3.000 - < 4.000 €", "4.000 - < 5.000 €", ">= 5.000 €"))
+
+# Create Regression Model
+poisson_model <-glm(formula = dat$Type.new ~ dat$e006B1 + dat$sex + dat$age2 + dat$OW + dat$STALA + dat$e093, data = dat, family = poisson)
+print(summary(poisson_model))
+
+poisson_model_fitted <- predict(poisson_model, type = "response")
+summary(poisson_model_fitted)
+
+```
+## Exercise 3: Negative Binomial regression (optional)
+
+Predict the amount of measles vaccinations (Maanzahl) by the number of siblings (e006B1), the sex and age of the children (sex, age2), place of residence (STALA, OW) and the monthly household income (e093), using a Negative Binomial regression model. Interpret the results. Which variables are associated with the outcome? Is the model a good fit to the data?
+
+```{r}
+library(foreign)
+library(MASS)
+
+# Negative binomial regression analysis
+negative_binomial_model <- glm.nb(formula = dat$Type.new ~ dat$e006B1 + dat$sex + dat$age2 + dat$OW + dat$STALA + dat$e093, data = dat)
+print(summary(negative_binomial_model))
+
+
+negative_binomial_model_fitted <- predict(negative_binomial_model, type = "response")
+summary(negative_binomial_model_fitted)
+
+```

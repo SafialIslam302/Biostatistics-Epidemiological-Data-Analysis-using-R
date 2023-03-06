@@ -1,0 +1,194 @@
+---
+title: "Homework 5 Solution"
+author: "Safial Islam Ayon"
+date: "November 28, 2021"
+output:
+  html_document: default
+---
+
+Download this R Markdown file, save it on your computer, and perform all the below tasks by inserting your answer in text or by inserting R chunks below. After you are done, upload this file with your solutions on Moodle.
+
+## Exercise 1: Probability distributions
+
+Explore the functions *rnorm*, *rt*, *runif*, *rbinom* in R that allow you to generate random numbers from the normal, t-, uniform, and binomial distribution. Compute them with different values, and inspect histograms to visualize their distribution.
+
+```{r}
+#Normal Distribution
+
+ND1 <- rnorm(n = 500, mean = 1, sd = 0.5)
+ND2 <- rnorm(n = 500, mean = 2, sd = 1.0)
+
+#Visualize the distribution
+
+par(mfrow = c(1, 2))
+hist(ND1, freq = FALSE, xlim = c(-2, 4), ylim = c(0, 1))
+hist(ND2, freq = FALSE, xlim = c(-3, 6), ylim = c(0, 1))
+
+
+```
+```{r}
+
+#t-distributions
+
+TD1 <- rt(n = 1000, df = 600)
+TD2 <- rt(n = 1000, df = 400)
+TD3 <- rt(n = 1000, df = 200)
+
+#Visualize the distribution
+
+par(mfrow = c(1, 3))
+hist(TD1, freq = FALSE, xlim = c(-5, 5), ylim = c(0, 0.5))
+hist(TD2, freq = FALSE, xlim = c(-5, 5), ylim = c(0, 0.5))
+hist(TD3, freq = FALSE, xlim = c(-5, 5), ylim = c(0, 0.5))
+
+```
+
+```{r}
+
+#Uniform Distributions
+
+UD1 <- runif(n = 1000, min = 0, max = 5)
+UD2 <- runif(n = 1000, min = -2, max = 2)
+UD3 <- runif(n = 1000, min = -5, max = -1)
+
+#Visualize the distribution
+par(mfrow = c(1, 3))
+hist(UD1, freq = FALSE, xlim = c(-2, 6), ylim = c(0, 0.4))
+hist(UD2, freq = FALSE, xlim = c(-5, 5), ylim = c(0, 0.4))
+hist(UD3, freq = FALSE, xlim = c(-6, 0), ylim = c(0, 0.4))
+
+```
+
+
+```{r}
+
+#Normal distributions
+
+ND1 <- rnorm(n = 5000, mean = 0.5, sd = 1.5)
+ND2 <- rnorm(n = 5000, mean = 0.5, sd = 1.5)
+ND3 <- rnorm(n = 5000, mean = 0.5, sd = 1.5)
+
+#visualize it, plot histograms with the relative frequency on the Y axis
+par(mfrow = c(1, 3))
+hist(ND1, freq = FALSE, xlim = c(-10, 10), ylim = c(0, 0.4))
+hist(ND2, freq = FALSE, xlim = c(-10, 10), ylim = c(0, 0.4))
+hist(ND3, freq = FALSE, xlim = c(-10, 10), ylim = c(0, 0.4))
+
+```
+
+## Exercise 2: Odds ratio
+
+In the KiGGS dataset:
+
+a) Compute the proportion of mothers that had hypertension during pregnancy. Use the variable 'e0155' which has values "Ja" (yes), "Nein" (No) and "Weiß nicht" (don't know).
+b) Create a new variable that is 0 or 1 depending on whether the children are small or tall (think of a good way how to do this) based on the variable 'groeB' (body height). 
+c) Then compute the odds ratio that the mother had hypertension during pregnancy (e0155 == "Ja" (yes), versus e0155 == "Nein" (no)) of tall vs. small children.
+
+```{r}
+load("KiGGS03_06.RData")
+
+Kiggs <- KiGGS03_06
+
+table(Kiggs$e0155)
+
+#Proportion of mothers that had hypertension during pregnancy = (202)/(202+2305+37) = 0.0794 or 7.9% 
+
+```
+
+```{r}
+str(Kiggs$groeB)
+typeof(Kiggs$groeB)
+Kiggs$groeB <- as.numeric(as.character(Kiggs$groeB))
+
+tapply(Kiggs$groeB, Kiggs$age2, mean, na.rm = TRUE)
+
+Kiggs$tall <- NULL
+
+for(i in 1:length(levels(Kiggs$age2)))
+{
+  n <- (Kiggs$age2 == levels(Kiggs$age2)[i])
+  Kiggs$tall[n] <- ifelse(Kiggs$groeB[n] > mean(Kiggs$groeB[n], na.rm = TRUE), 1, 0)
+}
+
+Kiggs$tall <- factor(Kiggs$tall, labels = c("short", "tall"))
+table(Kiggs$tall)
+                        
+```
+
+
+```{r}
+table(Kiggs$e0155)
+Kiggs$e0155[Kiggs$e0155 == "Weiß nicht"] <- NA
+Kiggs$e0155 <- droplevels(Kiggs$e0155)
+
+table(Kiggs$e0155, Kiggs$tall)
+
+tall_prob <- 83/(83+857)
+short_prob <- 118/(118+1404)
+
+tall_odds <- tall_prob/(1-tall_prob)
+tall_odds
+short_odds <- short_prob/(1-short_prob)
+short_odds
+
+tall_odds/short_odds
+
+```
+
+
+
+## Exercise 3 (optional): Confidence intervals
+
+Look at the hypertension variable from exercise 2. Use the binom::binom.confint and the questionr::odds.ratio functions to compute the estimates of the proportion and odds ratio as well as their confidence intervals. (you need to download and load these packages at first).
+
+```{r}
+library("binom")
+library("questionr")
+
+binom::binom.confint(83, 83+857)
+binom::binom.confint(118, 118+1404)
+
+questionr::odds.ratio(table(Kiggs$e0155, Kiggs$tall))
+```
+
+## Exercise 4 (optional, advanced): Bootstrap
+
+Adapt the bootstrap implementation in R_5b_estimation_bootstrap.Rmd to compute the bootstrap estimate of the standard error of the variance of a normally-distributed and a t-distributed variable. Are they similar?
+
+```{r}
+
+set.seed(1)
+n <- 100
+sigma <- 1
+X <- rnorm(n = n, mean = 0, sd = sigma)
+
+mean_BS <- NULL
+
+k = 1000
+for(i in 1:k)
+{
+  X_sample_i <- sample(X, size = n, replace = TRUE)
+  mean_BS[i] <- mean(X_sample_i)
+}
+
+SE_BS_mean <- sd(mean_BS)
+SE_BS_mean
+
+Y <- rt(n = n, df = 500)
+
+mean_t <- NULL
+k = 1000
+for(i in 1:k)
+{
+  y_sample_i <- sample(Y, size = n, replace = TRUE)
+  mean_t[i] <- mean(y_sample_i)
+}
+
+SE_t_mean <- sd(mean_t)
+SE_t_mean
+
+difference = SE_t_mean - SE_BS_mean
+difference
+
+#They are not similar.
+```

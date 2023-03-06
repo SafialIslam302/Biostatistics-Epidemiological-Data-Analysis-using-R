@@ -1,0 +1,459 @@
+---
+title: "Final_Exam"
+author: "Safial Islam Ayon"
+date: "3/3/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Question 1 - R Markdown**
+
+**Create an R Markdown file containing all relevant R code (in R chunks) that was used to calculate the results. Then knit the R Markdown script to a Word/pdf/html document and submit these two files.**
+
+Answer:
+
+Create the "Final_Exam" R Markdown file (html_document) and do all the tasks. Finally kint the R Markdown script to a html document (Final_Exam.html). 
+
+**Question 2 - Import, extract and save data**
+
+**a) Download the SPSS data file KiGGS03_06.sav from moodle and import it into R.**
+
+Answer:
+
+```{r}
+#install.packages("haven") # Install haven package
+library(haven)            # Load haven package
+data <- read_sav("KiGGS03_06.sav") # Reading data
+data
+```
+
+**b) Create a new dataframe in R named kiggs, which contains all variables (and only these) for the analysis (sys12, whr, bmiB, sex, age2).**
+
+Answer:
+
+```{r}
+kiggs <- data.frame("sys12"=data$sys12, 
+                    "whr"=data$whr, 
+                    "bmiB"=data$bmiB, 
+                    "sex"=data$sex,
+                    "age2"=data$age2)
+head(kiggs)
+```
+**c) Run the formatting steps in the provided Rmd file data_formatting.Rmd. Save this formatted dataframe on your computer as a RData file, e.g. on your desktop.**
+
+Answer:
+
+```{r}
+#Run the formatting steps
+kiggs$sex  <- factor(kiggs$sex, labels = c("boys", "girls"))
+kiggs$age2 <- factor(kiggs$age2, labels = c("0-1y", "2-3y", "4-5y", "6-7y", "8-9y", "10-11y", "12-13y", "14-15y", "16-17y"))
+
+#Save the formatted data frame on my computer as a R Data file
+save(kiggs, file = "data_formatting.RData")
+getwd()
+```
+
+
+**Question 3 - Descriptive statistics and graphs**
+
+**a) Describe the variables sys12, whr, bmiB with regard to the following criteria:**
+
+**a_1) What is the scale (measurement level) of each of these 3 variables (nominal, ordinal, metric)?**
+
+Answer:
+
+```{r}
+str(kiggs$sys12) # metric variables
+str(kiggs$whr)   # metric variables
+str(kiggs$bmiB)  # metric variables
+
+#If we use factor() function we can find how many levels are present in sys12, whr, and bmiB. The result are as follows: factor(kiggs$sys12) = 161 Levels; factor(kiggs$whr) = 2181 Levels; and factor(kiggs$bmiB) = 15795 Levels.
+```
+**a_2) For each variable, decide which descriptive statistic is best suited to describe it, and explain why. Available for selection: (i) Frequencies, (ii) mean/standard deviation.**
+
+Answer:
+
+sys12 (Metric) = mean/SD = a large number of continuous systolic blood pressure value and our main aim is to investigate the effct of other varible to this blood pressure. 
+
+whr (metric) = mean/SD = We want to know how much the mean of our population is and how much this deviation (waist-to-hip-ratio) is for a continuous numerical variable.
+
+bmiB (Metric) = mean/SD = a large number of numeric values with a "healthy rank" we wish to determine how far these data have strayed.
+
+**a_3) Calculate the descriptive statistics that you have chosen and report them in text or in a table.**
+
+Answer:
+
+```{r}
+#install.packages("qwraps2")
+
+library(qwraps2)
+options(qwraps2_markup = "markdown")
+
+set.seed(42)
+
+tab_summary <- 
+  list("SYS12" = 
+         list("Mean (SD)" = ~ qwraps2::mean_sd(.data$sys12, denote_sd = "paren", na_rm = TRUE, show_n = "never")),
+       "WHR" = 
+         list("Mean (SD)" = ~ qwraps2::mean_sd(.data$whr, denote_sd = "paren", na_rm = TRUE, show_n = "never")),
+       "BMI" = 
+         list("Mean (SD)" = ~ qwraps2::mean_sd(.data$bmiB, denote_sd = "paren", na_rm = TRUE, show_n = "never"))
+    )
+
+summary_table(kiggs, tab_summary)
+
+```
+
+**a_4) Also indicate how many missing values each variable has, and how many observations have complete data for all 3 variables (i.e. no missing values for any of the variables).**
+
+Answer:
+
+```{r}
+table(is.na(kiggs$sys12))
+#"sys12" has 2938 missing values
+
+table(is.na(kiggs$whr)) 
+#"whr" has 10909 missing values
+
+table(is.na(kiggs$bmiB)) 
+#"bmiB" has 147 missing values
+
+#Alternative way
+#sum(is.na(kiggs$sys12))
+#sum(is.na(kiggs$whr))
+#sum(is.na(kiggs$bmiB))
+
+#Check observations data
+
+table(is.na(kiggs$sys12)|is.na(kiggs$whr)|is.na(kiggs$bmiB))
+#There are 6697 complete observation value and 10943 observations with some missing value.
+```
+**b_1) For each variable, select whether a barplot or a histogram is more suitable for displaying their distribution.**
+
+Answer:
+
+As all 3 variables (sys12, whr, and bmiB) are metric so "Histogram" is more suitable for displaying their distribution. Histogram provides a visual interpretation of numerical data by showing the number of data points that fall within a specified range of values (called “bins”).
+
+**b_2) Then create these 3 diagrams using functions in the ggplot package. [3 points]. You can also create the diagrams using functions in base R, but then only maximally get 1.5 of the 3 points.**
+
+Answer:
+
+```{r}
+library(ggplot2)
+
+#sys12
+ggplot(data = kiggs, aes(x=data$sys12)) + geom_histogram(color="black", fill="white")
+# 
+#whr
+ggplot(data = kiggs, aes(x=data$whr)) + geom_histogram(color="black", fill="white")
+
+#bmiB
+ggplot(data = kiggs, aes(x=data$bmiB)) + geom_histogram(color="black", fill="white")
+```
+
+**Question 4 - Correlation**
+
+**Here, investigate the association of WHR and BMI with blood pressure.**
+
+**a) Calculate estimates of the Pearson correlation coefficient and the Spearman correlation coefficient of sys12 with whr and of sys12 with bmiB. Perform 2-sided significance tests at the significance level of 0.05 to test whether the correlations are equal to 0. Give the two estimated correlation coefficients, their respective estimated 95% confidence intervals and corresponding p-values.**
+
+Answer:
+
+```{r}
+#Create subset using sys12, whr and bmiB
+subset_kiggs <- kiggs[, c(1,2,3)]
+head(subset_kiggs)
+
+#Convert All Characters of a Data Frame to Numeric
+sys12 <- as.numeric(as.character(subset_kiggs$sys12))
+whr <- as.numeric(as.character(subset_kiggs$whr))
+bmiB <- as.numeric(as.character(subset_kiggs$bmiB))
+
+#Pearson correlation test
+
+pc_1 <- cor.test(sys12, whr, alternative = c("two.sided"), method = "pearson")
+pc_1
+
+#In the result
+#t is the t-test statistic value, which is 5.4889 for this test;
+#df is the degrees of freedom, which is 6723 for this test;
+#p-value is the significance level of the t-test, which is 4.191e-08 for this test;
+#conf.int is the confidence interval of the correlation coefficient at 95%, which is 0.04296136, 0.09055022 for this test;
+#sample estimates is the correlation coefficient, which is 0.06679378 for this test.
+
+pc_2 <- cor.test(sys12, bmiB, alternative = c("two.sided"), method = "pearson")
+pc_2
+
+#In the result
+#t is the t-test statistic value, which is 86.206 for this test;
+#df is the degrees of freedom, which is 14632 for this test;
+#p-value is the significance level of the t-test, which is < 2.2e-16 for this test;
+#conf.int is the confidence interval of the correlation coefficient at 95%, which is 0.5695171, 0.5910088 for this test;
+#sample estimates is the correlation coefficient, which is 0.580364 for this test.
+
+
+#Spearman rank correlation coefficient
+
+src_1 <- cor.test(sys12, whr, alternative = c("two.sided"), method = "spearman", exact = FALSE)
+src_1
+
+#In the result
+#S is the s-statistic, which is 4.9045e+10 for this test;
+#p-value is the p-value for the Spearman correlation test, which is 0.007781 for this test;
+#alternative hypothesis is a description of the alternative hypothesis;
+#sample estimates rho is the Spearman’s correlation coefficient, which is 0.03245129 for this test.
+
+src_2 <- cor.test(sys12, bmiB, alternative = c("two.sided"), method = "spearman", exact = FALSE )
+src_2
+
+#In the result 
+#S is the s-statistic, which is 2.0261e+11 for this test;
+#p-value is the p-value for the Spearman correlation test, which is < 2.2e-16 for this test;
+#alternative hypothesis is a description of the alternative hypothesis;
+#sample estimates rho is the Spearman’s correlation coefficient, which is 0.6120908 for this test.
+```
+
+**b) Interpret the result of the significance tests for the two correlation coefficients**
+
+**b_1) Is sys12 associated with whr if the Pearson correlation coefficient is used as measure of association?**
+
+Answer:
+
+The coefficient value between "sys12" and "whr" in "Pearson correlation coefficient" is positive (0.06679378), but it is very close to 0, so this means that there is a positive correlation between the variables "sys12" and "whr", but the "Strength of Association" is very small. In other words, as the "whr" increases, the "sys12" increases also.
+
+**b_2) Is sys12 associated with bmiB if the Pearson correlation coefficient is used as measure of association?**
+
+Answer:
+
+The coefficient value between "sys12" and "bmiB" in "Pearson correlation coefficient" is positive (0.580364), it is higer than 0.5, this means that there is a positive correlation between the variables "sys12" and "bmiB" and the "Strength of Association" is very large. In other words, as the "whr" increases, the "sys12" increases also.
+
+**b_3) Is sys12 associated with whr if the Spearman correlation coefficient is used as measure of association?**
+
+Answer:
+
+The coefficient value between "sys12" and "whr" in "Spearman correlation coefficient" is positive (0.03245129), but it is very close to 0, this means that there is a positive correlation between the variables "sys12" and "whr", but the "Strength of Association" is very small. In other words, as the "whr" increases, the "sys12" increases also.
+
+**b_4) Is sys12 associated with bmiB if the Spearman correlation coefficient is used as measure of association?**
+
+Answer:
+
+The coefficient value between "sys12" and "bmiB" in "Spearman correlation coefficient" is positive (0.6120908), it is higer than 0.5, this means that there is a positive correlation between the variables "sys12" and "bmiB", and the "Strength of Association" is very large.. In other words, as the "bmiB" increases, the "sys12" increases also.
+
+**c) The Pearson correlation coefficient is well-suited when the data is normally-distributed, the Spearman correlation coefficient does not make any assumptions on the distribution of the data and computes an association based on ranks of the values only. Which of the two correlation coefficients is a more appropriate measure here, and why?**
+
+Answer:
+
+First draw the normal distribution curve of the 3 variables.
+
+```{r}
+library("ggpubr")
+
+ggdensity(kiggs$sys12)
+ggdensity(kiggs$whr)
+ggdensity(kiggs$bmiB)
+```
+For double check draw the Normal Q-Q plot. 
+
+```{r}
+qqnorm(scale(kiggs$sys12))
+abline(0, 1)
+qqnorm(scale(kiggs$whr))
+abline(0, 1)
+qqnorm(scale(kiggs$bmiB))
+abline(0, 1)
+```
+
+Analyzing normal distribution curve and normal Q-Q plot we see that, "sys12" and "whr" are normally distributed (almost). But "bmiB" is not normally distributed. 
+
+So, when we estimate correlation coefficient between "sys12" and "whr" then "Pearson correlation coefficient" is good option, "whr" is normally distributed. We also see in the result in the above that when we calculate the correlation coefficient between "sys12" and "whr", then "Pearson correlation coefficient" gives 0.06679378 and "Spearman correlation coefficient" gives 0.03245129.
+
+On the other hand, when we estimate correlation coefficient between "sys12" and "bmiB" then "Spearman correlation coefficient" is good option comapre to "Pearson correlation coefficient". Because "bmiB" is not normally distributed. We also see in the result in the above that when we calculate the correlation coefficient between "sys12" and "bmiB", then "Spearman correlation coefficient" gives 0.6120908 and "Pearson correlation coefficient" gives 0.580364.
+
+
+**Question 5 - Logistic Regression**
+
+**Now, examine if there is an association of "whr" with "sys12", accounting for differences in the age and sex of children**
+
+**a) To do this, create a binary variable from sys12 (sys12 lower than 120 vs. sys12 higher or equal to 120) as outcome for the analysis.**
+
+Answer:
+
+```{r}
+#Create binary variable
+
+sys12_binary <- ifelse(sys12>=120, 1, 0)
+```
+
+**b) Now calculate a logistic regression with this outcome and the predictors whr, sex, age2.**
+
+Answer:
+
+```{r}
+whr <- as.numeric(kiggs$whr)
+sex <- as.numeric(kiggs$sex)
+age2 <- as.numeric(kiggs$age2)
+
+#The response variable is the binary variable sys12_binary and the predictor variable is whr, sex, and age2.
+
+log_model <- glm(sys12_binary ~ whr + sex + age2, family = 'binomial'(link = "logit"))
+
+#Use the extractor function summary() to review the model properties.
+
+summary(log_model)
+
+#Summarizing and visualizing regression models
+library(jtools)
+jtools::summ(log_model, exp = T, confint = T, model.fit = F, digits = 3)
+
+```
+
+**c) To answer the question of whether the WHR of children is associated with high blood pressure adjusting for possible influencing factors, consider the significance test of the regression coefficient of whr in this regression. Report the regression coefficient of whr, its 95% confidence interval, and the p-value of the significance test. Interpret the exponentiated regression coefficient, the 95% confidence interval, and the results of the hypothesis test.**
+
+Answer:
+
+The coefficient is 3.69860. with a p-value 2.12e-08 of significance and a 95% confidence interval of = ±(0.66021)
+
+The "whr" coefficient suggests that for every 10 increase in waist-to-hip-ratio, holding all other predictors constant, we can expect an increase of 3.69860*10 = 36.986 units systolic blood pressure, on average.
+
+The p-value of "whr" is close to zero. Since the p-value of "whr" is less than 0.05 (as the confidence level is 95%), so it is associated with the outcome variables sys12.
+
+The odd ratio of "whr" is 40.391. The odds ratio of 40.391 implies that a 1 unit increase in 'waist-to-hip-ratio' increases the odds of systolic blood pressure by a factor of 40.391.
+
+The p-value turns out to be 2.12e-08. Since this p-value is less than .05, we rejected the null hypothesis. In other words, there is a statistically significant relationship between waist-to-hip-ratio (whr) and systolic blood pressure (sys12).
+
+**d) Do the results make sense or is there anything that let’s you doubt the validity of the modelling or the results?**
+
+Answer:
+
+The result from the previous section clearly tells us that whr, sex, and age2 are strongly associated with "sys12". If any of them is not associated then we can omit them from the logistic regression for solving over fitting problems because they are not statistically significant. Therefore, they should be eliminated. 
+But one problem is present in the model, Linear Regression is used to handle regression problems whereas Logistic regression is used to handle the classification problems [1]. As, "whr" is a continuous variable so it will be good if we use linear regression instead of logistic regression. 
+
+[1] https://www.analyticsvidhya.com/blog/2020/12/beginners-take-how-logistic-regression-is-related-to-linear-regression/
+
+**Question 6 – Sample size calculation**
+
+**Now, let’s switch to a different study. The aim is to perform a sample size calculation for a new study, whose aim is to investigate the effect of walking daily 5000 steps more (compared to usual) on systolic blood pressure.**
+
+**a) Look at the literature or think for yourself based on expert knowledge what effect size you would expect. State the effect size that you are assuming and explain why.**
+
+Answer:
+
+The impact size of multiple research is considered in a meta-analysis, which then aggregates all of the studies into a single analysis. The impact size is commonly quantified in three ways in statistics analysis: (1) standardized mean difference, (2) odd ratio, (3) correlation coefficient
+
+I take correlation coefficient for measure effect size. Karl Pearson established the Pearson r correlation, which is the most extensively used statistic. The effect size parameter is indicated by the letter r. The value of the Pearson r correlation effect size ranges from -1 to +1. The impact size is small if the value of r fluctuates around 0.1, medium if r varies around 0.3, and big if r varies more than 0.5, according to Cohen. [1].
+
+The effect size is a measurement of the importance of a relationship between variables or a difference between groups. A large effect size implies that a study finding is useful, but a modest impact size shows that the research finding is just useful.
+
+[1] https://www.statisticssolutions.com/free-resources/directory-of-statistical-analyses/effect-size/
+
+```{r}
+kiggs_new <- data.frame("sys12"=data$sys12, 
+                    "walk"=data$e047z2)
+
+kiggs_new = kiggs_new[complete.cases(kiggs_new), ]
+
+#Correlation test between "sys12" and "e047z2"
+cor(kiggs_new[, c('sys12', 'walk')])
+
+#Correlation is "-0.01838124"
+
+sys12_new <- as.numeric(as.character(kiggs_new$sys12))
+walk_new <- as.numeric(as.character(kiggs_new$walk))
+
+#Pearson correlation test between "sys12" and "e047z2"
+res <- cor.test(sys12_new, walk_new, method = "pearson")
+res
+
+#Correlation is "-0.01838124"
+```
+
+Here the correlation value is negative, which means that one variable increases as the other one decreases. For the pearson correlation we can say that the expected effect size is "-0.01838124", minimum effect size "-0.05253650" and maximum effect size "0.01581698".
+
+**b) Choose an appropriate statistical model for the sample size calculation and explain why.**
+
+Answer:
+
+Statistical tests commonly assume that [1]:
+  1) the data are normally distributed
+  2) the groups that are being compared have similar variance
+  3) the data are independent
+  
+For your investigation the two variable "sys12" and "e047z2" both are continuous data. If the predictor and the outcome both variables are quantitative (i.e. continuous) and the predictor variables is more than one then "multiple regression" (pwr.f2.test) is good for sample size calculation. It shows how changes in the combination of two or more predictor variables predict the level of change in the outcome variable.
+  
+[1] https://www.scribbr.com/statistics/statistical-tests/
+
+**c) Now compute the minimum necessary sample size for a power of 80% and a significance threshold of alpha = 0.05, for example by using a function in the R package pwr. What is the sample size?**
+
+Answer: 
+
+```{r}
+library(pwr)
+
+test <- pwr.f2.test(u = 2, f2 = 0.018, sig.level=0.05, power = 0.8)
+test
+
+#Here, the numerator degrees of freedom, u, is the number of coefficients have in this model. f2 is the effect size. significance level and power is given. 
+
+#define a range of effect-sizes and sampling rate within this range
+
+f2 <- seq(0.01, 0.1, 0.01)
+nf2 <- length(f2)
+
+#define a range for the power values, and their sampling rate
+
+p <- seq(0.3, 0.9, 0.1) 
+np <- length(p)
+
+#compute the corresponding sample sizes for all combinations of correlations and power values
+
+sampleSize <- array(numeric(nf2*np), dim=c(nf2, np))
+
+for (i in 1:np) {
+  for (j in 1:nf2) {
+    # solve for sample size (v), assuming we use u=2 predictors (X) explaining the outcome (Y)
+    
+    testResult <- pwr.f2.test(u = 2, v = NULL, f2 = f2[j], sig.level = 0.05, power = p[i]) 
+    
+    # extract and round sample sizes up to nearest integer
+    
+    sampleSize[j, i] <- ceiling(testResult$v) 
+  }
+}
+
+#Graph the power plot
+
+xRange <- range(f2)
+yRange <- round(range(sampleSize))
+
+colors <- rainbow(length(p))
+plot(xRange, yRange, type="n", xlab="Effect-size", ylab="Sample Size (u)")
+
+#Add power curves
+
+for (i in 1:np) 
+  lines(f2, sampleSize[ , i], type="l", lwd=2, col=colors[i])
+
+#add annotations (grid lines, title, legend)
+
+abline(v=0, h=seq(0, yRange[2], 10), lty=2, col="light grey")
+abline(h=0, v=seq(xRange[1], xRange[2], 0.5), lty=2, col="light grey")
+title("Effect-size vs. Sample-size for different Power values in 
+      (0.3, 0.9), Significance=0.05")
+legend("topright", title="Power", as.character(p), fill=colors)
+```
+
+Here, v = 536. so, n = u + v = 536 + 2 = 538. That’s the estimated sample size we need.
+
+**d) Do you think this is a good study, or do you see any major weaknesses in the study design?**
+
+There are two main advantages to analyzing data using a multiple regression model [1]. 
+  1) The first is the ability to determine the relative influence of one or more predictor variables to the criterion value.
+  2) The second advantage is the ability to identify outliers, or anomalies.
+  
+The data utilized is generally the source of any disadvantages of utilizing a multiple regression model. Two examples of this are using incomplete data and falsely concluding that a correlation is a causation [1]. Regression models are susceptible to collinear problems. If the independent variables are strongly correlated, then they will eat into each other’s predictive power and the regression coefficients will lose their ruggedness [2].
+  
+[1] https://sciencing.com/advantages-disadvantages-multiple-regression-model-12070171.html 
+[2] https://www.vtupulse.com/machine-learning/advantages-and-disadvantages-of-regression-model/
